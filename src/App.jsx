@@ -1,29 +1,32 @@
 import './App.css';
-import { useReducer, useRef, createContext, useEffect } from 'react';
-import { Routes, Route, useNavigate, data } from 'react-router-dom';
+import { useReducer, useRef, createContext, useContext, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Home from './pages/Home';
 import New from './pages/New';
 import Edit from './pages/Edit';
 import Diary from './pages/Diary';
 import Notfound from './pages/Notfound';
+import { getEmotionImage } from './util/getEmotionImage';
+import Header from './components/Header';
+import Button from './components/Button';
 
 
 const mockData = [
   {
     id: 1,
-    createDate: new Date("2025-08-17").getTime(),
+    createdDate: new Date("2025-08-17").getTime(),
     emotionId: 1,
     content: "1번 일기 내용"
   },
   {
     id: 2,
-    createDate: new Date("2025-07-05").getTime(),
+    createdDate: new Date("2025-07-05").getTime(),
     emotionId: 2,
     content: "2번 일기 내용"
   },
   {
     id: 3,
-    createDate: new Date("2024-12-05").getTime(),
+    createdDate: new Date("2024-12-05").getTime(),
     emotionId: 4,
     content: "3번 일기 내용"
   }
@@ -31,7 +34,7 @@ const mockData = [
 
 function reducer(state, action) {
   switch (action.type) {
-    case "INIT":
+    case "InIT":
       return action.data
     case "CREATE":
       return [action.data, ...state]
@@ -48,14 +51,15 @@ function reducer(state, action) {
     default:
       return state
   }
+
 }
 
 export const DiaryStateContext = createContext()
 export const DiaryDispatchContext = createContext()
-function App() {
 
+function App() {
   const [data, dispatch] = useReducer(reducer, mockData)
-  const idRef = useRef(4)
+  const idRef = useRef(3)
 
   useEffect(() => {
     dispatch({
@@ -64,40 +68,41 @@ function App() {
     })
   }, [])
 
-  const onCreate = (createDate, emotionId, content) => {
+  const onCreate = (createdDate, emotionId, content) => {
 
     dispatch({
       type: "CREATE",
       data: {
         id: idRef.current++,
-        createDate,
+        createdDate,
         emotionId,
         content
       }
     })
   }
-  const onUpdate = (id, createDate, emotionId, content) => {
+
+  const onUpdate = (id, createdDate, emotionId, content) => {
     dispatch({
       type: "UPDATE",
       data: {
         id,
-        createDate,
+        createdDate,
         emotionId,
         content
       }
     })
   }
+
   const onDelete = (id) => {
     dispatch({
       type: "DELETE",
       id
     })
   }
-  return (
 
+  return (
     <DiaryStateContext.Provider value={data}>
       <DiaryDispatchContext.Provider value={{ onCreate, onUpdate, onDelete }}>
-
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/new" element={<New />} />
@@ -107,7 +112,6 @@ function App() {
         </Routes>
       </DiaryDispatchContext.Provider>
     </DiaryStateContext.Provider>
-
   )
 }
 
