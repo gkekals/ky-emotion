@@ -1,11 +1,11 @@
+import './App.css'
 import { useReducer, useRef, createContext, useEffect, useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import Home from './pages/Home'
-import New from './pages/New'
-import Edit from './pages/Edit'
 import Diary from './pages/Diary'
+import Edit from './pages/Edit'
+import Home from './pages/Home'
 import Notfound from './pages/Notfound'
-
+import New from './pages/New'
 
 const mockData = [
   {
@@ -29,39 +29,108 @@ const mockData = [
 ]
 
 function reducer(state, action) {
+  let nextState;
+
   switch (action.type) {
     case "INIT":
       return action.data
     case "CREATE":
-      return [action.data, ...state]
+      nextState = [action.data, ...state]
+      break;
     case "UPDATE":
-      return state.map((item) =>
-        String(item.id) === String(action.data.id) ? action.data : item
+      nextState = state.map((item) =>
+        String(item.id) === String(action.data.id) ?
+          action.data
+          : item
       )
+      break;
     case "DELETE":
-      return state.filter(
+      nextState = state.filter(
         (item) => String(item.id) !== String(action.id)
       )
+      break
     default:
       return state
   }
+  localStorage.setItem('diary', JSON.stringify(nextState))
+
+  return nextState
 }
 
 export const DiaryStateContext = createContext()
 export const DiaryDispatchContext = createContext()
 
 function App() {
-  const [data, dispatch] = useReducer(reducer, mockData)
-  const idRef = useRef(4)
+
+  const [data, dispatch] = useReducer(reducer, [])
+  const idRef = useRef(0)
+  const [loading, setLoading] = useState(true)
+
+  
+  // 다크/라이트 모드 상태 추가
+  const [mode, setMode] = useState("light");
+
+  const onChangeMode = (e) => {
+    setMode(e.target.value);
+  };
 
   useEffect(() => {
+
+    const storedData = localStorage.getItem('diary')
+
+
+    if (!storedData) {
+      localStorage.setItem('diary', JSON.stringify([]))
+      setLoading(false)
+      return
+    }
+
+    let parsed = []
+
+    try {
+      parsed = JSON.parse(storedData)
+    } catch {
+      localStorage.setItem('diary', JSON.stringify([]))
+      setLoading(false)
+      return
+    }
+
+    if (!Array.isArray(parsed)) {
+      setLoading(false)
+      return
+    }
+
+    
+    let maxId = 0;
+    parsed.forEach((item) => {
+      if (Number(item.id) > maxId) {
+        maxId = Number(item.id)
+      }
+    })
+
+    idRef.current = maxId + 1
+
     dispatch({
       type: "INIT",
-      data: mockData
+      data: parsed
     })
+
+    setLoading(false)
+
   }, [])
+  useEffect(() => {
+    const root = document.getElementById('root')
+    if (mode === 'dark') {
+      document.body.classList.add('dark')
+      if (root) root.classList.add('dark')
+    } else {
+      document.body.classList.remove('dark')
+      if (root) root.classList.remove('dark')
+    }
+  }, [mode]);
 
   const onCreate = (createdDate, emotionId, content) => {
+
     dispatch({
       type: "CREATE",
       data: {
@@ -72,7 +141,6 @@ function App() {
       }
     })
   }
-
   const onUpdate = (id, createdDate, emotionId, content) => {
     dispatch({
       type: "UPDATE",
@@ -91,36 +159,30 @@ function App() {
       id
     })
   }
-
-  const [mode, setMode] = useState("light")
-
-  const onChangeMode = (e) => {
-    setMode(e.target.value)
+  if (loading) {
+    return <div>데이터를 불러오는 중입니다.</div>
   }
 
   return (
     <div className={mode === 'dark' ? 'Container dark' : 'Container'}>
-      <div className="content-wrap">
-        <DiaryStateContext.Provider value={data}>
-          <DiaryDispatchContext.Provider value={{ onCreate, onUpdate, onDelete }}>
-      
-      <select 
-      value={mode} 
-      onChange={onChangeMode}>
-        <option value="light">light</option>
-        <option value="dark">dark</option>
+      {/* 다크/라이트 모드 선택 UI */}
+      <select value={mode} onChange={onChangeMode} style={{ margin: 16 }}>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
       </select>
-      
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/new" element={<New />} />
-              <Route path="/edit/:id" element={<Edit />} />
-              <Route path="/diary/:id" element={<Diary />} />
-              <Route path="*" element={<Notfound />} />
-            </Routes>
-          </DiaryDispatchContext.Provider>
-        </DiaryStateContext.Provider>
-      </div>
+
+      {/* 앱 상태 및 함수 Context 제공 */}
+      <DiaryStateContext.Provider value={data}>
+        <DiaryDispatchContext.Provider value={{ onCreate, onUpdate, onDelete }}>
+          <Routes>
+            <Route path='/' element={<Home />} />
+            <Route path='/new' element={<New />} />
+            <Route path='/edit/:id' element={<Edit />} />
+            <Route path='/diary/:id' element={<Diary />} />
+            <Route path='*' element={<Notfound />} />
+          </Routes>
+        </DiaryDispatchContext.Provider>
+      </DiaryStateContext.Provider>
     </div>
   )
 }

@@ -5,6 +5,7 @@ import Header from '../components/Header'
 import Button from '../components/Button'
 import { DiaryDispatchContext, DiaryStateContext } from '../App'
 import useDiary from '../hook/useDiary'
+import useTitle from '../hook/useTitle'
 
 const Edit = () => {
   const params = useParams()
@@ -12,6 +13,8 @@ const Edit = () => {
   const { onDelete, onUpdate } = useContext(DiaryDispatchContext)
   const curDiaryItem = useDiary(params.id)
   
+useTitle("일기 수정하기")
+
   const onSubmit = (input) => {
     if (window.confirm('일기를 정말 수정할까요?')) {
       onUpdate(

@@ -1,3 +1,4 @@
+/* App.css (다크모드/라이트모드 기본 스타일) */
 @font-face {
     font-family: "NanumPenScript";
     src: url("./assets/NanumPenScript-Regular.ttf");
@@ -13,49 +14,66 @@
 html,
 body {
     margin: 0;
-    width: 100%
-}
-
-#root {
-    background-color: white;
-
-    height: 100%;
-
+    width: 100%;
+    background: #ededed;
 }
 
 .Container {
+    background-color: #fff;
+    color: #222;
+    max-width: 700px;
+    margin: 40px auto;
+    border-radius: 14px;
+    box-shadow: rgba(50, 50, 50, 0.12) 0px 0px 29px 0px;
     min-height: 100vh;
-
+    padding: 24px;
+    transition: background 0.4s, color 0.4s;
 }
 
-img {
-    max-width: 100%;
+.top-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
 }
-
-.content-wrap {
-    max-width: 600px;
-    padding: 20px;
-    margin: auto;
-}
-
 
 .Container.dark {
-    background-color: rgb(29, 29, 29);
-    box-shadow: rgba(202, 202, 202, 0.9) 0px 0px 29px 0px;
+    background-color: #19191a;
+    color: #f3f3f3;
+    box-shadow: rgba(202, 202, 202, 0.2) 0px 0px 29px 0px;
 }
 
-.Container.dark * {
+/* 다크모드에서 주요 텍스트 색상만 변경 */
+.Container.dark h1,
+.Container.dark h2,
+.Container.dark h3,
+.Container.dark p,
+.Container.dark .text-main {
     color: #fff;
 }
 
+/* 버튼/셀렉트 등 입력 UI는 밝은 글씨, 어두운 배경 */
 .Container.dark button,
-.Container.dark .DiaryList .menu-bar select,
 .Container.dark select {
+    background-color: #333;
+    color: #eee;
+    border: 1px solid #444;
+}
+
+body.dark {
     background-color: #000;
 }
-select {
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    padding: 5px 10px;
-    cursor: pointer;
+
+/* 일기 리스트 카드, 감정박스 등은 필요한 경우 직접 스타일 */
+.DiaryList .emotion-box {
+    border-radius: 8px;
+    margin-right: 16px;
+}
+
+.Container.dark select,
+.Container.dark .top-bar select,
+.Container.dark select:focus,
+.Container.dark select:active {
+    background-color: #333 !important;
+    color: #eee !important;
+    border: 1px solid #444 !important;
 }
